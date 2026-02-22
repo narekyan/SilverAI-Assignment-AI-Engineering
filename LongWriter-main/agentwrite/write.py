@@ -135,3 +135,20 @@ if __name__ == '__main__':
         processes.append(p)
     for p in processes:
         p.join()
+
+def get_response_openrouter(prompt, max_tokens=1024, api_key=None):
+    if api_key is None:
+        raise ValueError("OpenRouter API key missing")
+    resp = requests.post(
+        "https://openrouter.ai/api/v1/completions",
+        headers={"Authorization": f"Bearer {api_key}"},
+        json={"model": "openai/gpt-4", "prompt": prompt, "max_tokens": max_tokens},
+        timeout=300
+    )
+    data = resp.json()
+    if "completion" in data:
+        return data["completion"]
+    elif "choices" in data and len(data["choices"]) > 0:
+        return data["choices"][0].get("text", "")
+    else:
+        return "Error: unexpected API response: " + str(data)
